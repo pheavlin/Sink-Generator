@@ -1,0 +1,361 @@
+///////////////////OpenSCAD///////////////////
+
+///////////////////parameters///////////////////
+
+//Block
+block_length = 31.375;
+block_width = 24;
+block_thickness = 9;
+
+//Basin
+basin_length = 22;
+basin_width = 15;
+basin_depth = 7;
+
+basin_location_x = 4.8125;
+basin_location_y = 3.5;
+basin_location_z = 2;
+
+//Back Hogout
+hogout_length = 0;
+hogout_width = 0;
+hogout_depth = 0;
+
+hogout_location_x = 5.6875;
+hogout_location_y = 20.125;
+hogout_location_z = 0;
+
+//Pitch
+pitch = 0.375;
+
+pitch_location_x = 15.6875;
+pitch_location_y = 15.25;
+
+//Routing
+
+interior_radius = 0.5;
+exterior_radius = 0.5;
+front_corner_radius = 3;
+
+//Drain
+
+drain_radius = 1;
+
+//Non-Routed Section
+
+square_edge = 10;
+radial_edge = 14;
+
+///////////////////////////////////////////RENDERS///////////////////////////////////////////////////
+
+    //Cubic Block minus Hogout
+
+difference(){
+
+    //Cubic Block minus Basin
+
+difference(){
+
+    //Cubic Block All Elements
+    
+        //Exterior Non-Routed Section
+
+union(){
+translate([0,radial_edge,0]){
+cube([block_length,square_edge,block_thickness]);
+}
+
+//Exterior Non-Routed Section
+
+difference(){
+minkowski(){
+translate([exterior_radius,exterior_radius,exterior_radius]){
+sphere(exterior_radius,$fn=100,center=false);
+}
+
+//Cubic Block minus Front Radial Corners
+
+difference(){
+
+//Cubic Block
+    
+translate([0,0,0]){
+    cube([block_length-(exterior_radius*2),block_width-(exterior_radius*2),block_thickness-(exterior_radius*2)]);
+}
+}
+}
+//Front Radial Corners
+
+    //Left exterior radial corner
+
+union(){
+difference(){
+    cube([front_corner_radius,front_corner_radius,block_thickness]);
+
+    translate([front_corner_radius,front_corner_radius,0]){
+    cylinder(h = block_thickness, r1 = front_corner_radius, r2 = front_corner_radius, center = false,$fn=1000);
+}
+}
+
+difference(){
+cube([front_corner_radius,front_corner_radius,exterior_radius]);
+minkowski(){
+translate([front_corner_radius,front_corner_radius,exterior_radius]){
+cylinder(h = 0.00001, r1 = (front_corner_radius - exterior_radius), r2 = (front_corner_radius - exterior_radius), center = false,$fn=100);
+}
+sphere(exterior_radius,center=false,$fn=100);
+}
+}
+
+translate([0,0,block_thickness])mirror([0,0,1]){
+difference(){
+cube([front_corner_radius,front_corner_radius,exterior_radius]);
+minkowski(){
+translate([front_corner_radius,front_corner_radius,exterior_radius]){
+cylinder(h = 0.0001, r1 = (front_corner_radius - exterior_radius), r2 = (front_corner_radius - exterior_radius), center = false,$fn=100);
+}
+sphere(exterior_radius,center=false,$fn=100);
+}
+}
+}
+
+    //Right Exterior Radial Corner
+
+translate([block_length,0,0])mirror([1,0,0]){
+union(){
+difference(){
+    cube([front_corner_radius,front_corner_radius,block_thickness]);
+
+    translate([front_corner_radius,front_corner_radius,0]){
+    cylinder(h = block_thickness, r1 = front_corner_radius, r2 = front_corner_radius, center = false,$fn=1000);
+}
+}
+
+difference(){
+cube([front_corner_radius,front_corner_radius,exterior_radius]);
+minkowski(){
+translate([front_corner_radius,front_corner_radius,exterior_radius]){
+cylinder(h = 0.0001, r1 = (front_corner_radius - exterior_radius), r2 = (front_corner_radius - exterior_radius), center = false,$fn=100);
+}
+sphere(0.5,center=false,$fn=100);
+}
+}
+
+translate([0,0,block_thickness])mirror([0,0,1]){
+difference(){
+cube([front_corner_radius,front_corner_radius,exterior_radius]);
+minkowski(){
+translate([front_corner_radius,front_corner_radius,exterior_radius]){
+cylinder(h = 0.0001, r1 = (front_corner_radius - exterior_radius), r2 = (front_corner_radius - exterior_radius), center = false,$fn=100);
+}
+sphere(exterior_radius,center=false,$fn=100);
+}
+}
+}
+}
+}
+}
+}
+
+}
+
+//End Cubic Block
+
+
+
+//Cubic Basin + Pitch + Interior Routing
+
+union(){
+union(){
+
+    //Cubic Basin
+    
+translate([basin_location_x+(interior_radius),basin_location_y+(interior_radius),basin_location_z+(interior_radius)]){
+minkowski(){
+cube([basin_length-(interior_radius*2),basin_width-(interior_radius*2),basin_depth-(interior_radius*2)]);
+sphere(interior_radius,$fn=100);
+}
+}
+
+    //Pitch + Drain
+
+hull(){
+    
+minkowski(){
+    sphere(interior_radius,$fn=100);
+        translate([basin_location_x+interior_radius,basin_location_y+interior_radius,basin_location_z+interior_radius]){
+        cube([basin_length-(interior_radius*2),basin_width-(interior_radius*2),0.00001]);
+        }
+}
+
+translate([pitch_location_x,pitch_location_y,(basin_location_z - pitch)]){
+    cylinder(r1=1,r2=1,h=0.00001,center=false,$fn=100);
+}
+}
+
+}
+
+//Interior Routing
+
+    //Cubic Stock for Interior Routing
+
+difference(){
+
+translate([basin_location_x-(interior_radius),basin_location_y-(interior_radius),block_thickness-interior_radius]){
+    cube([basin_length+(interior_radius*2),basin_width+(interior_radius*2),interior_radius]);
+}
+
+        //Interior Routing Subtractive Elements
+
+translate([basin_location_x-(interior_radius),basin_location_y-(interior_radius),block_thickness-interior_radius]){
+
+
+union(){
+
+            //West Interior Routing
+
+rotate(a=[270,0,0],v=[1,0,0])translate([0,0,0]){
+cylinder(h=basin_width+(interior_radius*2),r1=interior_radius,r2=interior_radius,center=false,$fn=100);
+}
+
+            //Lower Left Interior Routing Radial Corner
+
+difference(){
+difference(){
+difference(){
+translate([(interior_radius*2),(interior_radius*2),0]){
+rotate_extrude(convexity = 10,$fn=100)
+translate([1, 0, 0])
+circle(r = interior_radius);
+}
+
+translate([-interior_radius*2,interior_radius*2,-interior_radius]){
+    cube([interior_radius*6,interior_radius*6,interior_radius*2]);
+}
+}
+translate([interior_radius*2,-interior_radius*2,-interior_radius]){
+    cube([interior_radius*6,interior_radius*6,interior_radius*2]);
+}
+}
+translate([interior_radius*2,interior_radius*2,-interior_radius]){
+    cube([interior_radius*6,interior_radius*6,interior_radius*2]);
+}
+}
+
+            //East Interior Routing
+
+mirror(v = [1,0,0]) 
+    rotate(a=[270,0,0],v=[1,0,0]) translate([-basin_length-(interior_radius*2),0,0]) {
+    cylinder (h=basin_width+(interior_radius*2),r1=interior_radius,r2=0.5,center=false,$fn=100);
+}
+
+            //Lower Right Interior Routing Radial Corner
+
+mirror(v = [1,0,0]) 
+rotate(a=[0,0,0],v=[1,0,0]) translate([-basin_length-(interior_radius*2),0,0]) {
+difference(){
+difference(){
+difference(){
+translate([(interior_radius*2),(interior_radius*2),0]){
+rotate_extrude(convexity = 10,$fn=100)
+translate([1, 0, 0])
+circle(r = interior_radius);
+}
+
+translate([-interior_radius*2,interior_radius*2,-interior_radius]){
+    cube([interior_radius*6,interior_radius*6,interior_radius*2]);
+}
+}
+translate([interior_radius*2,-interior_radius*2,-interior_radius]){
+    cube([interior_radius*6,interior_radius*6,interior_radius*2]);
+}
+}
+translate([interior_radius*2,interior_radius*2,-interior_radius]){
+    cube([interior_radius*6,interior_radius*6,interior_radius*2]);
+}
+}
+}
+
+            //South Interior Routing
+
+rotate(a=[0,90,0],v=[0,1,0])translate([0,0,0]){
+cylinder(h=basin_length+(interior_radius*2),r1=interior_radius,r2=interior_radius,center=false,$fn=100);
+}
+
+            //Upper Left Interior Routing Radial Corner
+
+rotate(a=[0,0,270],v=[0,0,1]) translate([-basin_width-(interior_radius*2),0,0]) {
+difference(){
+difference(){
+difference(){
+translate([(interior_radius*2),(interior_radius*2),0]){
+rotate_extrude(convexity = 10,$fn=100)
+translate([interior_radius*2, 0, 0])
+circle(r = interior_radius);
+}
+
+translate([-(interior_radius*2),(interior_radius*2),-interior_radius]){
+    cube([interior_radius*6,interior_radius*6,interior_radius*2]);
+}
+}
+translate([interior_radius*2,-interior_radius*2,-interior_radius]){
+    cube([interior_radius*6,interior_radius*6,interior_radius*2]);
+}
+}
+translate([interior_radius*2,interior_radius*2,-interior_radius]){
+    cube([interior_radius*6,interior_radius*6,interior_radius*2]);
+}
+}
+}
+
+            //North Interior Routing
+
+mirror(v = [1,0,0]) 
+    rotate(a=[0,270,0],v=[0,1,0])translate([0,basin_width+(interior_radius*2),0]){
+    cylinder(h=basin_length+(interior_radius*2),r1=interior_radius,r2=interior_radius,center=false,$fn=100);
+}
+
+            //Upper Right Interior Routing Radial Corner
+
+mirror(v = [1,0,0]) 
+rotate(a=[0,0,270],v=[0,0,1]) translate([-basin_width-(interior_radius*2),-basin_length-(interior_radius*2),0]) {
+difference(){
+difference(){
+difference(){
+translate([(interior_radius*2),(interior_radius*2),0]){
+rotate_extrude(convexity = 10,$fn=100)
+translate([interior_radius*2, 0, 0])
+circle(r = interior_radius);
+}
+
+translate([-interior_radius*2,interior_radius*2,-interior_radius]){
+    cube([interior_radius*6,interior_radius*6,interior_radius*2]);
+}
+}
+translate([interior_radius*2,-interior_radius*2,-interior_radius]){
+    cube([interior_radius*6,interior_radius*6,interior_radius*2]);
+}
+}
+translate([interior_radius*2,interior_radius*2,-interior_radius]){
+    cube([interior_radius*6,interior_radius*6,interior_radius*2]);
+}
+}
+}
+}
+}
+}
+
+}
+
+//End Cubic Basin
+
+}
+
+//Hogout For Plumbing
+
+translate([hogout_location_x,hogout_location_y,hogout_location_z]){
+    cube([hogout_length,hogout_width,hogout_depth]);
+}
+
+    cube([hogout_length,hogout_width,hogout_depth]);
+}
